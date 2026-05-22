@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credenza Platform — Data Entry</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f11;--surface:#16161a;--surface2:#1e1e24;--surface3:#26262f;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#e8e6e0;--text-muted:#6b6966;--text-secondary:#a09d96;--accent:#c8a96e;--accent2:#e8c98a;--accent-dim:rgba(200,169,110,0.12);--accent-glow:rgba(200,169,110,0.06);--scs:#c8523a;--scs-dim:rgba(200,82,58,0.12);--user:#4a7fb5;--user-dim:rgba(74,127,181,0.12);--ind:#5a9467;--ind-dim:rgba(90,148,103,0.12);--tech:#b87d3a;--tech-dim:rgba(184,125,58,0.12);--log:#7a5a9e;--log-dim:rgba(122,90,158,0.12);--com:#c0a030;--com-dim:rgba(192,160,48,0.12);--oth:#6b8a8a;--oth-dim:rgba(107,138,138,0.12);--r:6px;--r2:10px;--r3:14px;--shadow:0 4px 24px rgba(0,0,0,0.4)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px;line-height:1.6}
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-family:"DM Serif Display",serif;font-size:22px;color:var(--accent2);letter-spacing:-.3px;line-height:1.2}
+.sidebar-logo p{font-size:11px;color:var(--text-muted);margin-top:3px;letter-spacing:.5px;text-transform:uppercase}
+.sidebar-section{padding:14px 12px 6px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px 9px 14px;cursor:pointer;border-radius:var(--r);margin:1px 8px;transition:all .15s;font-size:13px;color:var(--text-secondary);border:1px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-dim);border-color:rgba(200,169,110,.2);color:var(--accent2)}
+.nav-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nav-item .count{margin-left:auto;font-size:10px;background:var(--surface3);color:var(--text-muted);padding:1px 6px;border-radius:10px;font-weight:500}
+.nav-item.active .count{background:var(--accent-dim);color:var(--accent)}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.7}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{display:flex;align-items:center;gap:12px}
+.topbar-dot{width:10px;height:10px;border-radius:50%}
+.topbar h2{font-family:"DM Serif Display",serif;font-size:17px;color:var(--text);font-weight:400}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.topbar-sub{font-size:12px;color:var(--text-muted);margin-left:4px}
+.btn{padding:7px 16px;border-radius:var(--r);font-size:13px;font-family:"DM Sans",sans-serif;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#0f0f11;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:transparent;color:var(--text-secondary);border-color:var(--border2)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-danger{background:rgba(200,82,58,.15);color:#e07060;border-color:rgba(200,82,58,.2)}
+.btn-danger:hover{background:rgba(200,82,58,.25)}
+.btn-sm{padding:4px 10px;font-size:12px}
+.content{padding:28px 32px;flex:1}
+.record-list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.record-list-title{font-size:13px;color:var(--text-muted)}
+.record-table{width:100%;border-collapse:collapse;font-size:13px}
+.record-table th{text-align:left;padding:9px 14px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border)}
+.record-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-secondary);vertical-align:middle}
+.record-table tr:hover td{background:var(--surface2);color:var(--text);cursor:pointer}
+.pk-badge{font-family:monospace;font-size:10px;background:var(--surface3);color:var(--text-muted);padding:2px 7px;border-radius:4px}
+.status-pill{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500}
+.status-active{background:rgba(90,148,103,.2);color:#7aba88}
+.status-draft{background:var(--surface3);color:var(--text-muted)}
+.status-pending{background:rgba(192,160,48,.2);color:#d4b850}
+.status-matched{background:rgba(74,127,181,.2);color:#6aaddd}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.empty-state .icon{font-size:32px;margin-bottom:12px;opacity:.5}
+.empty-state p{font-size:13px}
+.form-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
+.form-panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.form-panel-header h3{font-size:14px;font-weight:600;color:var(--text)}
+.form-panel-header p{font-size:12px;color:var(--text-muted);margin-top:2px}
+.form-panel-body{padding:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid.cols-3{grid-template-columns:1fr 1fr 1fr}
+.form-grid.cols-1{grid-template-columns:1fr}
+.form-span-2{grid-column:span 2}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:5px}
+.form-group label .req{color:var(--accent);font-size:12px}
+.form-group label .fk-badge{font-size:9px;background:var(--user-dim);color:#6aaddd;border:1px solid rgba(74,127,181,.2);padding:1px 5px;border-radius:3px;letter-spacing:0;text-transform:none;font-weight:500}
+.form-group label .pk-label{font-size:9px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(200,169,110,.2);padding:1px 5px;border-radius:3px;letter-spacing:0;text-transform:none;font-weight:500}
+input[type="text"],input[type="email"],input[type="tel"],input[type="date"],input[type="number"],input[type="url"],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:"DM Sans",sans-serif;font-size:13px;padding:9px 12px;transition:border-color .15s,box-shadow .15s;outline:none;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:rgba(200,169,110,.4);box-shadow:0 0 0 3px var(--accent-glow)}
+input::placeholder,textarea::placeholder{color:var(--text-muted)}
+select{cursor:pointer}
+select option{background:var(--surface2)}
+textarea{resize:vertical;min-height:80px}
+.input-readonly{background:var(--surface3);color:var(--text-muted);cursor:default;font-size:11px;font-family:monospace;letter-spacing:.5px}
+.section-divider{display:flex;align-items:center;gap:10px;margin:24px 0 16px}
+.section-divider .line{flex:1;height:1px;background:var(--border)}
+.section-divider span{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);white-space:nowrap}
+.status-section{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.status-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.status-card label{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.linked-records{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);margin-top:20px;overflow:hidden}
+.linked-records-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.linked-records-header h4{font-size:12px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:7px}
+.linked-dot{width:7px;height:7px;border-radius:50%}
+.linked-records-body{padding:12px 16px}
+.linked-record-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .1s;font-size:12px}
+.linked-record-item:hover{background:var(--surface3)}
+.linked-record-item .lri-id{font-family:monospace;color:var(--text-muted);font-size:11px}
+.linked-record-item .lri-name{color:var(--text);flex:1;padding:0 10px}
+.linked-record-item .lri-arrow{color:var(--text-muted);font-size:11px}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);margin-bottom:20px}
+.breadcrumb span{cursor:pointer}
+.breadcrumb span:hover{color:var(--accent)}
+.breadcrumb .sep{color:var(--border2)}
+.breadcrumb .current{color:var(--text-secondary);cursor:default}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r2);padding:12px 18px;font-size:13px;color:var(--text);box-shadow:var(--shadow);z-index:9999;display:flex;align-items:center;gap:10px;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.toast.show{transform:translateY(0);opacity:1}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r3);padding:24px;width:480px;max-height:80vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal h3{font-family:"DM Serif Display",serif;font-size:18px;color:var(--text);margin-bottom:4px}
+.modal p{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.pane{animation:fadeSlideIn .2s ease}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:10px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo"><h1>Credenza</h1><p>Supply Chain Platform</p></div>
+  <div class="sidebar-section">Core</div>
+  <div class="nav-item active" onclick="navigate('scs')" id="nav-scs"><div class="dot" style="background:var(--scs)"></div>Supply Chain Solution<span class="count" id="cnt-scs">0</span></div>
+  <div class="nav-item" onclick="navigate('matching')" id="nav-matching"><div class="dot" style="background:var(--scs)"></div>Matching User Profile<span class="count" id="cnt-matching">0</span></div>
+  <div class="sidebar-section">User Attributes</div>
+  <div class="nav-item" onclick="navigate('user')" id="nav-user"><div class="dot" style="background:var(--user)"></div>User Identity<span class="count" id="cnt-user">0</span></div>
+  <div class="sidebar-section">Profile Modules</div>
+  <div class="nav-item" onclick="navigate('industry')" id="nav-industry"><div class="dot" style="background:var(--ind)"></div>Industry Profile<span class="count" id="cnt-industry">0</span></div>
+  <div class="nav-item" onclick="navigate('technical')" id="nav-technical"><div class="dot" style="background:var(--tech)"></div>Technical Profile<span class="count" id="cnt-technical">0</span></div>
+  <div class="nav-item" onclick="navigate('logistics')" id="nav-logistics"><div class="dot" style="background:var(--log)"></div>Logistics Profile<span class="count" id="cnt-logistics">0</span></div>
+  <div class="nav-item" onclick="navigate('commercial')" id="nav-commercial"><div class="dot" style="background:var(--com)"></div>Commercial Profile<span class="count" id="cnt-commercial">0</span></div>
+  <div class="nav-item" onclick="navigate('others')" id="nav-others"><div class="dot" style="background:var(--oth)"></div>Others Profile<span class="count" id="cnt-others">0</span></div>
+  <div class="sidebar-footer">ERC v1.0 · Data Entry System<br>Records stored in session</div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">
+      <div class="topbar-dot" id="topbar-dot" style="background:var(--scs)"></div>
+      <h2 id="topbar-title">Supply Chain Solution</h2>
+      <span class="topbar-sub" id="topbar-sub">SCS_ID · Core Entity</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="showList()" id="btn-list" style="display:none">&#8617; All Records</button>
+      <button class="btn btn-primary btn-sm" onclick="showNewForm()">+ New Record</button>
+    </div>
+  </div>
+  <div class="content" id="main-content"></div>
+</main>
+<div class="toast" id="toast"><span>&#10003;</span><span id="toast-msg">Saved</span></div>
+<div class="modal-backdrop" id="modal-delete">
+  <div class="modal">
+    <h3>Delete Record?</h3>
+    <p>This action cannot be undone. Related FK references will become orphaned.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB={scs:[],user:[],industry:[],technical:[],logistics:[],commercial:[],others:[],matching:[]};
+let currentEntity='scs',editingId=null,deleteTarget={entity:null,id:null};
+const genId=(p)=>p+'_'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).substr(2,3).toUpperCase();
+const ENTITIES={
+  scs:{label:'Supply Chain Solution',color:'var(--scs)',pk:'scs_id',sub:'SCS_ID · Mandatory one-to-one with User'},
+  matching:{label:'Matching User Profile',color:'var(--scs)',pk:'user_id',sub:'PK/FK User_ID · Bridge Table'},
+  user:{label:'User Identity',color:'var(--user)',pk:'user_id',sub:'User_ID · Central hub — all profiles link here'},
+  industry:{label:'Industry Profile',color:'var(--ind)',pk:'industry_id',sub:'Industry_Profile_ID → FK to User_Identity'},
+  technical:{label:'Technical Profile',color:'var(--tech)',pk:'technical_id',sub:'Technical_Profile_ID → FK to User_Identity'},
+  logistics:{label:'Logistics Profile',color:'var(--log)',pk:'logistics_id',sub:'Logistics_Profile_ID → FK to User_Identity'},
+  commercial:{label:'Commercial Profile',color:'var(--com)',pk:'commercial_id',sub:'Commercial_Profile_ID → FK to User_Identity'},
+  others:{label:'Others Profile',color:'var(--oth)',pk:'others_id',sub:'Others_Profile_ID → FK to User_Identity'},
+};
+
+function navigate(entity){
+  currentEntity=entity; editingId=null;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-'+entity).classList.add('active');
+  const cfg=ENTITIES[entity];
+  document.getElementById('topbar-dot').style.background=cfg.color;
+  document.getElementById('topbar-title').textContent=cfg.label;
+  document.getElementById('topbar-sub').textContent=cfg.sub;
+  showList();
+}
+
+function showList(){
+  editingId=null;
+  document.getElementById('btn-list').style.display='none';
+  const records=DB[currentEntity], cfg=ENTITIES[currentEntity];
+  let h=`<div class="pane"><div class="record-list-header"><span class="record-list-title">${records.length} record${records.length!==1?'s':''} &middot; ${cfg.label}</span></div>`;
+  if(records.length===0){
+    h+=`<div class="form-panel"><div class="empty-state"><div class="icon">&#9672;</div><p>No records yet. Click <strong>+ New Record</strong> to create the first entry.</p></div></div>`;
+  } else {
+    h+=`<div class="form-panel"><table class="record-table"><thead><tr><th>ID</th><th>Name / Title</th><th>Status</th><th>FK Reference</th><th></th></tr></thead><tbody>`;
+    records.forEach(r=>{
+      const pk=r[cfg.pk]||'—';
+      const name=r.name||r.title||r.org_name||r.scs_type||r.description||'(untitled)';
+      const status=r.status||r.intake_status||r.profile_status||'Draft';
+      const fk=r.user_id?`<span class="pk-badge">USR: ${r.user_id.slice(-6)}</span>`:r.requesting_user_id?`<span class="pk-badge">REQ: ${r.requesting_user_id.slice(-6)}</span>`:'—';
+      const sc=status==='Active'||status==='Approved'?'status-active':status==='Pending'?'status-pending':status==='Matched'?'status-matched':'status-draft';
+      h+=`<tr onclick="editRecord('${r[cfg.pk]}')"><td><span class="pk-badge">${pk.slice(-8)}</span></td><td style="color:var(--text)">${name}</td><td><span class="status-pill ${sc}">${status}</span></td><td>${fk}</td><td style="text-align:right"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editRecord('${r[cfg.pk]}')">Edit</button> <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteRecord('${currentEntity}','${r[cfg.pk]}')">&#x2715;</button></td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  }
+  h+=`</div>`;
+  document.getElementById('main-content').innerHTML=h;
+  updateCounts();
+}
+
+function showNewForm(){editingId=null;document.getElementById('btn-list').style.display='inline-flex';renderForm(null);}
+function editRecord(id){
+  editingId=id;
+  document.getElementById('btn-list').style.display='inline-flex';
+  const record=DB[currentEntity].find(r=>r[ENTITIES[currentEntity].pk]===id);
+  renderForm(record);
+}
+
+function v(r,k,d=''){return r&&r[k]!==undefined?r[k]:d;}
+
+function userOpts(sel=''){let o=`<option value="">&#8212; Select User &#8212;</option>`;DB.user.forEach(u=>{o+=`<option value="${u.user_id}" ${u.user_id===sel?'selected':''}>${u.name||u.user_id} (${u.user_id.slice(-6)})</option>`;});return o;}
+function industryOpts(sel=''){let o=`<option value="">&#8212; None &#8212;</option>`;DB.industry.forEach(r=>{o+=`<option value="${r.industry_id}" ${r.industry_id===sel?'selected':''}>${r.title||r.org_name||r.industry_id} (${r.industry_id.slice(-6)})</option>`;});return o;}
+function techOpts(sel=''){let o=`<option value="">&#8212; None &#8212;</option>`;DB.technical.forEach(r=>{o+=`<option value="${r.technical_id}" ${r.technical_id===sel?'selected':''}>${r.title||r.technical_id} (${r.technical_id.slice(-6)})</option>`;});return o;}
+function logOpts(sel=''){let o=`<option value="">&#8212; None &#8212;</option>`;DB.logistics.forEach(r=>{o+=`<option value="${r.logistics_id}" ${r.logistics_id===sel?'selected':''}>${r.title||r.logistics_id} (${r.logistics_id.slice(-6)})</option>`;});return o;}
+function comOpts(sel=''){let o=`<option value="">&#8212; None &#8212;</option>`;DB.commercial.forEach(r=>{o+=`<option value="${r.commercial_id}" ${r.commercial_id===sel?'selected':''}>${r.title||r.commercial_id} (${r.commercial_id.slice(-6)})</option>`;});return o;}
+function othOpts(sel=''){let o=`<option value="">&#8212; None &#8212;</option>`;DB.others.forEach(r=>{o+=`<option value="${r.others_id}" ${r.others_id===sel?'selected':''}>${r.title||r.others_id} (${r.others_id.slice(-6)})</option>`;});return o;}
+function scsOpts(sel=''){let o=`<option value="">&#8212; None &#8212;</option>`;DB.scs.forEach(r=>{o+=`<option value="${r.scs_id}" ${r.scs_id===sel?'selected':''}>${r.scs_type||r.scs_id} (${r.scs_id.slice(-6)})</option>`;});return o;}
+
+const inp=(id,lbl,r,k,type='text',req=false)=>`<div class="form-group"><label>${lbl}${req?'<span class="req">*</span>':''}</label><input type="${type}" id="f_${id}" value="${v(r,k)}" placeholder="${lbl}" ${req?'required':''}></div>`;
+const ta=(id,lbl,r,k)=>`<div class="form-group"><label>${lbl}</label><textarea id="f_${id}" placeholder="${lbl}">${v(r,k)}</textarea></div>`;
+const divider=(lbl)=>`<div class="section-divider" style="grid-column:1/-1"><div class="line"></div><span>${lbl}</span><div class="line"></div></div>`;
+const fkField=(id,lbl,opts)=>`<div class="form-group"><label>${lbl} <span class="fk-badge">FK</span></label><select id="f_${id}">${opts}</select></div>`;
+const pkField=(id,lbl,val)=>`<div class="form-group"><label>${lbl} <span class="pk-label">PK</span></label><input class="input-readonly" readonly value="${val}"></div>`;
+
+function sel2(id,lbl,opts,r,k,req=false){
+  return `<div class="form-group"><label>${lbl}${req?'<span class="req">*</span>':''}</label><select id="f_${id}" ${req?'required':''}>${opts.map(o=>`<option value="${o}" ${v(r,k)===o?'selected':''}>${o||'&#8212; Select &#8212;'}</option>`).join('')}</select></div>`;
+}
+
+function renderForm(record){
+  const isNew=!record, e=currentEntity, cfg=ENTITIES[e];
+  const pk=isNew?genId(cfg.pk.split('_')[0].toUpperCase()):record[cfg.pk];
+  let h=`<div class="pane"><div class="breadcrumb"><span onclick="showList()">${cfg.label}</span><span class="sep">&#8250;</span><span class="current">${isNew?'New Record':pk.slice(-10)}</span></div>`;
+  h+=`<form onsubmit="saveRecord(event)"><input type="hidden" id="f_pk" value="${pk}">`;
+  if(e==='scs') h+=formSCS(record,pk,isNew);
+  else if(e==='user') h+=formUser(record,pk,isNew);
+  else if(e==='industry') h+=formIndustry(record,pk,isNew);
+  else if(e==='technical') h+=formTechnical(record,pk,isNew);
+  else if(e==='logistics') h+=formLogistics(record,pk,isNew);
+  else if(e==='commercial') h+=formCommercial(record,pk,isNew);
+  else if(e==='others') h+=formOthers(record,pk,isNew);
+  else if(e==='matching') h+=formMatching(record,pk,isNew);
+  h+=`<div style="display:flex;gap:10px;margin-top:24px;align-items:center"><button type="submit" class="btn btn-primary">&#128190; Save Record</button><button type="button" class="btn btn-ghost" onclick="showList()">Cancel</button>${!isNew?`<button type="button" class="btn btn-danger" onclick="deleteRecord('${e}','${pk}')" style="margin-left:auto">Delete</button>`:''}</div></form>`;
+  if(!isNew) h+=linkedPanel(e,record);
+  h+=`</div>`;
+  document.getElementById('main-content').innerHTML=h;
+}
+
+function formSCS(r,pk,isNew){
+  const inco=['','EXW','FCA','FAS','FOB','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
+  const modes=['','Sea Freight','Air Freight','Road','Rail','Multimodal','Courier'];
+  return `<div class="form-panel"><div class="form-panel-header"><div><h3>Supply Chain Solution</h3><p>Core transaction record — links requester user to matched supplier</p></div></div><div class="form-panel-body"><div class="form-grid">
+    ${pkField('pk2','SCS_ID · Auto',pk)}
+    ${sel2('scs_type','SCS Type',['','Procurement','Supply','Trading','Manufacturing','Logistics-Only','Turnkey'],r,'scs_type',true)}
+    <div class="form-group"><label>Requesting User <span class="fk-badge">FK &rarr; User_Identity</span></label><select id="f_requesting_user_id">${userOpts(v(r,'requesting_user_id'))}</select></div>
+    <div class="form-group"><label>Matching User <span class="fk-badge">FK &rarr; User_Identity</span></label><select id="f_matching_user_id">${userOpts(v(r,'matching_user_id'))}</select></div>
+    ${sel2('incoterms_code','Incoterms Code',inco,r,'incoterms_code')}
+    ${sel2('transport_mode','Transportation Mode',modes,r,'transport_mode')}
+    ${inp('country_origin','Country of Origin',r,'country_origin')}
+    ${inp('city_origin','City of Origin',r,'city_origin')}
+    ${inp('country_destination','Country of Destination',r,'country_destination')}
+    ${inp('city_destination','City of Destination',r,'city_destination')}
+    ${fkField('logistics_profile_id','Logistics Profile',logOpts(v(r,'logistics_profile_id')))}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Status Tracking</span><div class="line"></div></div>
+  <div class="status-section">
+    <div class="status-card"><label>Technical Status</label><select id="f_technical_status">${['&#8212;','Pending','Under Review','Approved','Rejected'].map(o=>`<option value="${o}" ${v(r,'technical_status')===o?'selected':''}>${o}</option>`).join('')}</select></div>
+    <div class="status-card"><label>Logistics Status</label><select id="f_logistics_status">${['&#8212;','Pending','In Transit','Delivered','On Hold'].map(o=>`<option value="${o}" ${v(r,'logistics_status')===o?'selected':''}>${o}</option>`).join('')}</select></div>
+    <div class="status-card"><label>Commercial Status</label><select id="f_commercial_status">${['&#8212;','Pending','Negotiating','Agreed','Cancelled'].map(o=>`<option value="${o}" ${v(r,'commercial_status')===o?'selected':''}>${o}</option>`).join('')}</select></div>
+  </div></div></div>`;
+}
+
+function formUser(r,pk,isNew){
+  return `<div class="form-panel"><div class="form-panel-header"><div><h3>User Identity</h3><p>Central hub entity — all profiles FK back to User_ID</p></div></div><div class="form-panel-body">
+  <div class="form-grid">
+    ${pkField('pk2','User_ID · Auto',pk)}
+    <div class="form-group"><label>Auto Profile ID <span class="pk-label">Auto</span></label><input class="input-readonly" readonly value="${v(r,'auto_profile_id')||genId('APROF')}"></div>
+    ${inp('first_name','First Name',r,'first_name','text',true)}
+    ${inp('last_name','Last Name',r,'last_name','text',true)}
+    ${inp('initials','Member Profile Initials',r,'initials')}
+    ${inp('email','Email Address',r,'email','email',true)}
+    ${inp('mobile_tel','Mobile Tel',r,'mobile_tel','tel')}
+    ${inp('office_tel','Office Tel',r,'office_tel','tel')}
+    ${inp('idd_code','IDD Country Code',r,'idd_code')}
+    ${inp('fax_tel','Fax Tel',r,'fax_tel','tel')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Organization</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${inp('org_name','Organization Name',r,'org_name','text',true)}
+    ${inp('org_initials','Organization Name Initials',r,'org_initials')}
+    ${inp('website','Company Website',r,'website','url')}
+    ${sel2('requester_type','Requester Type',['','Buyer','Supplier','Trader','Manufacturer','Logistics Provider','Other'],r,'requester_type')}
+    <div class="form-group form-span-2">${ta('company_bg','Company Background',r,'company_bg')}</div>
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Address</span><div class="line"></div></div>
+  <div class="form-grid">
+    <div class="form-group form-span-2">${inp('street_address','Street Address',r,'street_address')}</div>
+    ${inp('city','City',r,'city')} ${inp('country','Country',r,'country')} ${inp('zip','Zip / Postal Code',r,'zip')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Profile Links (FK)</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${fkField('industry_profile_id','Industry Profile &rarr; Industry_Profile_ID',industryOpts(v(r,'industry_profile_id')))}
+    ${fkField('technical_profile_id','Technical Profile &rarr; Technical_Profile_ID',techOpts(v(r,'technical_profile_id')))}
+    ${fkField('logistics_profile_id','Logistics Profile &rarr; Logistics_Profile_ID',logOpts(v(r,'logistics_profile_id')))}
+    ${fkField('commercial_profile_id','Commercial Profile &rarr; Commercial_Profile_ID',comOpts(v(r,'commercial_profile_id')))}
+    ${fkField('others_profile_id','Others Profile &rarr; Others_Profile_ID',othOpts(v(r,'others_profile_id')))}
+    ${sel2('profile_status','Profile Status',['Draft','Active','Suspended','Deactivated'],r,'profile_status')}
+    ${sel2('health_indicator','Health Indicator',['Good','Fair','Poor','Critical'],r,'health_indicator')}
+  </div></div></div>`;
+}
+
+function formIndustry(r,pk,isNew){
+  const cats=['','Administration & Business Support','Arts & Creative Industry','Construction & Contracting','Education & Training','Entertainment & Recreation','Food, Beverages & Catering','Furniture, Fixtures & Equipment','Health & Medical','Hospitality','Operating Supplies & Equipment','Professional, Scientific & Technical','Transport & Warehousing','Other'];
+  return `<div class="form-panel"><div class="form-panel-header"><div><h3>Industry Profile</h3><p>Organizational capabilities, industry classification, and capacity</p></div></div><div class="form-panel-body">
+  <div class="form-grid">
+    ${pkField('pk2','Industry_Profile_ID · Auto',pk)}
+    <div class="form-group"><label>User Identity <span class="fk-badge">FK &rarr; User_Identity</span> <span class="req">*</span></label><select id="f_user_id" required>${userOpts(v(r,'user_id'))}</select></div>
+    ${inp('org_name','Organization Name',r,'org_name')}
+    ${sel2('industry_category','Industry Category',cats,r,'industry_category',true)}
+    ${sel2('intake_status','Intake Status',['Draft','Submitted','Under Review','Approved','Rejected'],r,'intake_status')}
+    ${sel2('health_indicator','Health Indicator',['Good','Fair','Poor','Critical'],r,'health_indicator')}
+    ${inp('geo_coverage','Geographical Coverage Preference',r,'geo_coverage')}
+    ${inp('other_pref','Other Preference / Limitation',r,'other_pref')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Strengths & Capacity</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${ta('service_capacity','Service Strength & Capacity',r,'service_capacity')}
+    ${ta('design_capacity','Design Strength & Capacity',r,'design_capacity')}
+    ${ta('production_capacity','Production Strength & Capacity',r,'production_capacity')}
+    ${ta('financial_strength','Financial Strength & Capacity',r,'financial_strength')}
+    ${ta('quality_guarantee','Quality Assurance & Guarantee',r,'quality_guarantee')}
+    ${ta('esg','Environmental, Social & Governance',r,'esg')}
+    ${ta('accreditation','Accreditation & Certificates',r,'accreditation')}
+    ${ta('job_reference','Job Reference & Experience',r,'job_reference')}
+    ${ta('capex_opex','CAPEX / OPEX Plan (General)',r,'capex_opex')}
+    ${ta('production_plan','Production Plan (General)',r,'production_plan')}
+  </div></div></div>`;
+}
+
+function formTechnical(r,pk,isNew){
+  return `<div class="form-panel"><div class="form-panel-header"><div><h3>Technical Profile</h3><p>Commodity & service specifications, requirements, and schedules</p></div></div><div class="form-panel-body">
+  <div class="form-grid">
+    ${pkField('pk2','Technical_Profile_ID · Auto',pk)}
+    <div class="form-group"><label>User Identity <span class="fk-badge">FK &rarr; User_Identity</span> <span class="req">*</span></label><select id="f_user_id" required>${userOpts(v(r,'user_id'))}</select></div>
+    ${inp('title','Profile Title',r,'title','text',true)}
+    ${sel2('intake_status','Intake Status',['Draft','Submitted','Under Review','Approved','Rejected'],r,'intake_status')}
+    ${sel2('commodity_type','Commodity Type',['','Goods','Services','Works','Mixed'],r,'commodity_type')}
+    ${inp('item_qty','Item Quantity',r,'item_qty','number')}
+    ${inp('item_qty_unit','Item Quantity Unit',r,'item_qty_unit')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Description & Requirements</span><div class="line"></div></div>
+  <div class="form-grid cols-1">
+    ${ta('description','Technical / Commodity Description',r,'description')}
+    ${ta('functional_req','Functional Requirements',r,'functional_req')}
+    ${ta('feature_req','Feature Requirements',r,'feature_req')}
+    ${ta('design_app','Design Application / Scope',r,'design_app')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Material & Physical Specs</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${ta('materials_req','Materials Requirements',r,'materials_req')}
+    ${ta('dimension_req','Dimension Requirements',r,'dimension_req')}
+    ${ta('brand_req','Brand Standard Requirements',r,'brand_req')}
+    ${ta('packing_req','Packing Materials Requirements',r,'packing_req')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Quality, Compliance & Certifications</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${ta('testing_cert','Testing & Certification Requirements',r,'testing_cert')}
+    ${ta('code_compliance','Code / Regulation Compliance Requirements',r,'code_compliance')}
+    ${ta('certificates','Certificates Requirements',r,'certificates')}
+    ${ta('licenses','Licenses Requirements',r,'licenses')}
+    ${ta('notarization','Notarization Requirements',r,'notarization')}
+    ${ta('msds','Material Safety Data Sheet Requirements',r,'msds')}
+    ${ta('warranties','Warranties Requirements',r,'warranties')}
+    ${ta('disclaimers','Disclaimers Requirements',r,'disclaimers')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Sampling, Inspection & Production Schedule</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${ta('sample_req','Sample / Prototype Requirement',r,'sample_req')}
+    ${ta('sample_schedule','Sample Submission & Prototype Production Schedule',r,'sample_schedule')}
+    ${ta('inspection_req','Inspection Requirements',r,'inspection_req')}
+    ${ta('inspection_schedule','Inspection Schedule',r,'inspection_schedule')}
+    ${ta('production_schedule','Item Production Schedule',r,'production_schedule')}
+    ${ta('service_scope','Service Scope & Capacity',r,'service_scope')}
+    ${ta('design_scope','Design Scope & Capacity',r,'design_scope')}
+    ${ta('production_scope','Production Scope & Capacity',r,'production_scope')}
+    ${ta('business_scope','Business Scope & Capacity',r,'business_scope')}
+    ${ta('other_req','Other Requirements',r,'other_req')}
+    ${ta('service_req','Other Service Requirements',r,'service_req')}
+  </div></div></div>`;
+}
+
+function formLogistics(r,pk,isNew){
+  const inco=['','EXW','FCA','FAS','FOB','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
+  const modes=['','Sea Freight','Air Freight','Road','Rail','Multimodal','Courier Express'];
+  const ctypes=['','20ft Standard','40ft Standard','40ft High Cube','20ft Reefer','40ft Reefer','Open Top','Flat Rack','Break Bulk'];
+  const dunits=['cm','mm','m','inch','ft'];
+  return `<div class="form-panel"><div class="form-panel-header"><div><h3>Logistics Profile</h3><p>Shipping, freight, cargo dimensions, and delivery requirements</p></div></div><div class="form-panel-body">
+  <div class="form-grid">
+    ${pkField('pk2','Logistics_Profile_ID · Auto',pk)}
+    <div class="form-group"><label>User Identity <span class="fk-badge">FK &rarr; User_Identity</span> <span class="req">*</span></label><select id="f_user_id" required>${userOpts(v(r,'user_id'))}</select></div>
+    ${inp('title','Profile Title',r,'title','text',true)}
+    ${ta('description','Profile Description',r,'description')}
+    ${inp('expiry','Profile Expiry Date',r,'expiry','date')}
+    ${sel2('intake_status','Intake Status',['Draft','Active','Expired','Suspended'],r,'intake_status')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Routing & Mode</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${sel2('transport_mode','Transportation Mode',modes,r,'transport_mode')}
+    ${sel2('incoterms','Incoterms Code',inco,r,'incoterms')}
+    ${inp('hs_code','HS Code',r,'hs_code')}
+    ${inp('coo_cert','Country of Origin Certificate',r,'coo_cert')}
+    ${inp('origin_city','State / City of Origin',r,'origin_city')}
+    ${inp('dest_city','State / City of Destination',r,'dest_city')}
+    ${inp('ship_date','Target Shipping Date',r,'ship_date','date')}
+    ${inp('arrival_date','Target Arrival Date',r,'arrival_date','date')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Container & Cargo Dimensions</span><div class="line"></div></div>
+  <div class="form-grid cols-3">
+    ${sel2('container_type','Container Type',ctypes,r,'container_type')}
+    ${inp('container_qty','Container Quantity',r,'container_qty','number')}
+    ${inp('qty_unit','Quantity Unit',r,'qty_unit')}
+    ${inp('item_height','Item Height',r,'item_height','number')}
+    ${inp('item_width','Item Width',r,'item_width','number')}
+    ${inp('item_length','Item Length',r,'item_length','number')}
+    ${inp('item_diameter','Item Diameter',r,'item_diameter','number')}
+    ${sel2('dim_unit','Dimension Unit',dunits,r,'dim_unit')}
+    ${inp('gross_weight','Gross Weight (per unit)',r,'gross_weight','number')}
+    ${inp('total_weight','Total Gross Weight',r,'total_weight','number')}
+    ${inp('gross_volume','Gross Volume (per unit)',r,'gross_volume','number')}
+    ${inp('total_volume','Total Gross Volume',r,'total_volume','number')}
+    ${inp('vol_weight','Total Volumetric Weight',r,'vol_weight','number')}
+    ${inp('calc_volume','Total Calculated Gross Volume',r,'calc_volume','number')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Pickup & Delivery</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${inp('pickup_address','Pickup Local Address',r,'pickup_address')}
+    ${inp('pickup_contact','Pickup Contact Name',r,'pickup_contact')}
+    ${inp('delivery_address','Delivery Local Address',r,'delivery_address')}
+    ${inp('delivery_contact','Delivery Contact Name',r,'delivery_contact')}
+    ${inp('delivery_email','Delivery Contact Email',r,'delivery_email','email')}
+    ${inp('delivery_tel','Delivery Contact Tel',r,'delivery_tel','tel')}
+    ${inp('consignee_id','Consignee Profile ID',r,'consignee_id')}
+    ${inp('contracting_id','Contracting Party Profile ID',r,'contracting_id')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Customs & Special Requirements</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${ta('custom_import','Custom Import Requirements',r,'custom_import')}
+    ${ta('custom_export','Custom Export Requirements',r,'custom_export')}
+    ${ta('pickup_req','Pickup Requirements',r,'pickup_req')}
+    ${ta('delivery_req','Delivery Requirements',r,'delivery_req')}
+    ${ta('surveying_req','Surveying Requirements',r,'surveying_req')}
+    ${ta('inspection_req','Inspection Requirements',r,'inspection_req')}
+    ${ta('packing_req','Packing & Materials Requirements',r,'packing_req')}
+    ${ta('other_req','Other Requirements',r,'other_req')}
+  </div></div></div>`;
+}
+
+function formCommercial(r,pk,isNew){
+  const pterms=['','COD - Cash on Delivery','CIA - Cash in Advance','NET 30','NET 60','NET 90','LC - Letter of Credit','TT - Telegraphic Transfer','DA - Documents Against Acceptance','DP - Documents Against Payment'];
+  return `<div class="form-panel"><div class="form-panel-header"><div><h3>Commercial Profile</h3><p>Payment terms, pricing, rates, and commercial conditions</p></div></div><div class="form-panel-body">
+  <div class="form-grid">
+    ${pkField('pk2','Commercial_Profile_ID · Auto',pk)}
+    <div class="form-group"><label>User Identity <span class="fk-badge">FK &rarr; User_Identity</span> <span class="req">*</span></label><select id="f_user_id" required>${userOpts(v(r,'user_id'))}</select></div>
+    ${inp('title','Profile Title',r,'title','text',true)}
+    ${sel2('intake_status','Intake Status',['Draft','Active','Expired','Suspended'],r,'intake_status')}
+    ${inp('commodity_desc','Commodity Description',r,'commodity_desc')}
+    ${sel2('commodity_type','Commodity Type',['','Goods','Services','Works','Mixed'],r,'commodity_type')}
+    ${inp('currency','Currency Requirement',r,'currency')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Pricing & Rates</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${inp('price_rates','Commodity Price Rates',r,'price_rates')}
+    ${inp('cost_rates','Commodity Cost Rates',r,'cost_rates')}
+    ${inp('direct_costs','Other Direct Costs',r,'direct_costs')}
+    ${inp('indirect_costs','Other Indirect Costs',r,'indirect_costs')}
+    ${inp('direct_disc','Other Direct Discounts',r,'direct_disc')}
+    ${inp('indirect_disc','Other Indirect Discounts',r,'indirect_disc')}
+    ${inp('taxes','Taxes, Duties & Tariffs',r,'taxes')}
+    ${inp('credit_lines','Credit Lines',r,'credit_lines')}
+    ${inp('interest','Interest (Min - Max)',r,'interest')}
+    ${inp('late_fees','Late Fees (Min - Max)',r,'late_fees')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Payment Terms</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${sel2('payment_terms','Payment Terms & Conditions',pterms,r,'payment_terms')}
+    ${inp('payment_methods','Payment Methods / Options',r,'payment_methods')}
+    ${inp('payment_schedule','Payment Schedule',r,'payment_schedule')}
+    ${inp('payment_due','Payment Due Dates',r,'payment_due')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Relevant Amounts, Quantities & Dates</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${ta('relevant_amounts','Relevant Amounts',r,'relevant_amounts')}
+    ${ta('relevant_quantities','Relevant Quantities',r,'relevant_quantities')}
+    ${ta('relevant_dates','Relevant Dates',r,'relevant_dates')}
+    ${ta('rfq_invite','RFQ / Invitation to User Organization',r,'rfq_invite')}
+    ${ta('guarantee_warranty','Guarantee & Warranty Requirement',r,'guarantee_warranty')}
+    ${ta('termination_cond','Termination Conditions',r,'termination_cond')}
+    ${ta('policy_req','Policy & Procedure Requirements',r,'policy_req')}
+    ${ta('approval_req','Approval Requirements',r,'approval_req')}
+    ${ta('remarks','Remarks',r,'remarks')}
+  </div></div></div>`;
+}
+
+function formOthers(r,pk,isNew){
+  return `<div class="form-panel"><div class="form-panel-header"><div><h3>Others Profile</h3><p>Legal provisions, contractual terms, and environmental context</p></div></div><div class="form-panel-body">
+  <div class="form-grid">
+    ${pkField('pk2','Others_Profile_ID · Auto',pk)}
+    <div class="form-group"><label>User Identity <span class="fk-badge">FK &rarr; User_Identity</span> <span class="req">*</span></label><select id="f_user_id" required>${userOpts(v(r,'user_id'))}</select></div>
+    <div class="form-group"><label>Auto Entry Number <span class="pk-label">Auto</span></label><input class="input-readonly" readonly value="${v(r,'auto_entry')||genId('ENT')}"></div>
+    ${inp('account_manager','Account Manager',r,'account_manager')}
+    ${inp('department','Department Name',r,'department')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Environment Considerations</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${ta('social_env','Social Environment Consideration',r,'social_env')}
+    ${ta('economic_env','Economy / Economic Environment Consideration',r,'economic_env')}
+    ${ta('political_env','Political Environment Consideration',r,'political_env')}
+    ${ta('trade_env','Foreign Trade Environment Consideration',r,'trade_env')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Contract Terms & Parties</span><div class="line"></div></div>
+  <div class="form-grid cols-1">
+    ${ta('purpose','Purpose of Contract',r,'purpose')}
+    ${ta('general_desc','General Description',r,'general_desc')}
+    ${ta('identity_parties','Identity of Parties',r,'identity_parties')}
+    ${ta('addresses_parties','Addresses of Parties',r,'addresses_parties')}
+    ${ta('duties','Duties of Party',r,'duties')}
+    ${ta('rights','Rights of Party',r,'rights')}
+    ${ta('underlying_assumptions','Underlying Assumptions',r,'underlying_assumptions')}
+    ${ta('contract_terms','Contract Terms & Conditions',r,'contract_terms')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Approval & Signatories</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${ta('approval_matrix','Approval Matrix',r,'approval_matrix')}
+    ${ta('approvers','Approvers',r,'approvers')}
+    ${ta('endorsers','Endorsers',r,'endorsers')}
+    ${ta('authorized_sig','Authorized Signatories',r,'authorized_sig')}
+    ${ta('witnesses','Witnesses Requirements',r,'witnesses')}
+    ${ta('specifiers','Specifiers & Designers',r,'specifiers')}
+  </div>
+  <div class="section-divider"><div class="line"></div><span>Legal Provisions</span><div class="line"></div></div>
+  <div class="form-grid">
+    ${inp('jurisdiction','Governing Jurisdiction',r,'jurisdiction')}
+    ${inp('venue','Venue of Arbitration / Litigation',r,'venue')}
+    ${ta('arbitration','Arbitration Clause',r,'arbitration')}
+    ${ta('confidentiality','Confidentiality Provision',r,'confidentiality')}
+    ${ta('indemnification','Indemnification Agreement',r,'indemnification')}
+    ${ta('liquidated_damages','Liquidated Damages',r,'liquidated_damages')}
+    ${ta('default_prov','Default Provision',r,'default_prov')}
+    ${ta('severability','Severability of Individual Provisions',r,'severability')}
+    ${ta('limitations','Limitations on Liability',r,'limitations')}
+    ${ta('entire_agreement','Statement: Contract Constitutes Entire Agreement',r,'entire_agreement')}
+  </div></div></div>`;
+}
+
+function formMatching(r,pk,isNew){
+  return `<div class="form-panel"><div class="form-panel-header"><div><h3>Matching User Profile</h3><p>Bridge table — links a matched user's full profile set to an SCS record</p></div></div><div class="form-panel-body">
+  <div class="form-grid">
+    <div class="form-group"><label>User Identity <span class="pk-label">PK / FK</span> <span class="req">*</span></label><select id="f_user_id" required>${userOpts(v(r,'user_id'))}</select></div>
+    <div class="form-group"><label>Supply Chain Solution <span class="fk-badge">FK &rarr; SCS</span></label><select id="f_scs_id">${scsOpts(v(r,'scs_id'))}</select></div>
+    ${fkField('industry_profile_id','Industry Profile &rarr; Industry_Profile_ID',industryOpts(v(r,'industry_profile_id')))}
+    ${fkField('technical_profile_id','Technical Profile &rarr; Technical_Profile_ID',techOpts(v(r,'technical_profile_id')))}
+    ${fkField('logistics_profile_id','Logistics Profile &rarr; Logistics_Profile_ID',logOpts(v(r,'logistics_profile_id')))}
+    ${fkField('commercial_profile_id','Commercial Profile &rarr; Commercial_Profile_ID',comOpts(v(r,'commercial_profile_id')))}
+    ${fkField('others_profile_id','Others Profile &rarr; Others_Profile_ID',othOpts(v(r,'others_profile_id')))}
+    ${sel2('status','Match Status',['Proposed','Accepted','Rejected','Matched','Completed'],r,'status')}
+  </div></div></div>`;
+}
+
+function linkedPanel(entity, record){
+  let h='';
+  if(entity==='user'){
+    const links=[
+      {key:'industry',label:'Industry Profile',color:'var(--ind)',pk:'industry_id',fk:'user_id'},
+      {key:'technical',label:'Technical Profile',color:'var(--tech)',pk:'technical_id',fk:'user_id'},
+      {key:'logistics',label:'Logistics Profile',color:'var(--log)',pk:'logistics_id',fk:'user_id'},
+      {key:'commercial',label:'Commercial Profile',color:'var(--com)',pk:'commercial_id',fk:'user_id'},
+      {key:'others',label:'Others Profile',color:'var(--oth)',pk:'others_id',fk:'user_id'},
+    ];
+    links.forEach(lnk=>{
+      const rel=DB[lnk.key].filter(x=>x[lnk.fk]===record.user_id);
+      h+=`<div class="linked-records"><div class="linked-records-header"><h4><div class="linked-dot" style="background:${lnk.color}"></div>${lnk.label} (${rel.length})</h4><button class="btn btn-ghost btn-sm" onclick="navigate('${lnk.key}');showNewForm()">+ Add</button></div><div class="linked-records-body">`;
+      if(rel.length===0){h+=`<p style="font-size:12px;color:var(--text-muted);padding:4px 0">No records linked to this user yet.</p>`;}
+      else rel.forEach(x=>{h+=`<div class="linked-record-item" onclick="navigate('${lnk.key}');editRecord('${x[lnk.pk]}')"><span class="lri-id">${x[lnk.pk].slice(-8)}</span><span class="lri-name">${x.title||x.org_name||'(untitled)'}</span><span class="lri-arrow">&#8594;</span></div>`;});
+      h+=`</div></div>`;
+    });
+  } else if(entity==='scs'){
+    const matchings=DB.matching.filter(m=>m.scs_id===record.scs_id);
+    h+=`<div class="linked-records"><div class="linked-records-header"><h4><div class="linked-dot" style="background:var(--scs)"></div>Matching User Profiles (${matchings.length})</h4><button class="btn btn-ghost btn-sm" onclick="navigate('matching');showNewForm()">+ Add Match</button></div><div class="linked-records-body">`;
+    if(matchings.length===0){h+=`<p style="font-size:12px;color:var(--text-muted);padding:4px 0">No matched users assigned yet.</p>`;}
+    else matchings.forEach(m=>{const u=DB.user.find(x=>x.user_id===m.user_id);const sc=m.status==='Matched'?'status-matched':m.status==='Accepted'?'status-active':'status-draft';h+=`<div class="linked-record-item" onclick="navigate('matching');editRecord('${m.user_id}')"><span class="lri-id">${m.user_id.slice(-8)}</span><span class="lri-name">${u?(u.name||u.org_name):'(unknown user)'}</span><span class="status-pill ${sc}" style="font-size:10px">${m.status}</span><span class="lri-arrow">&#8594;</span></div>`;});
+    h+=`</div></div>`;
+  }
+  return h;
+}
+
+function saveRecord(e){
+  e.preventDefault();
+  const pk=document.getElementById('f_pk').value;
+  const cfg=ENTITIES[currentEntity];
+  let record={[cfg.pk]:pk};
+  document.querySelectorAll('[id^="f_"]').forEach(el=>{
+    const key=el.id.replace('f_','');
+    if(key==='pk'||key==='pk2') return;
+    record[key]=el.value;
+  });
+  record.name=record.first_name&&record.last_name?`${record.first_name} ${record.last_name}`:record.title||record.org_name||record.scs_type||record.commodity_desc||'';
+  record.status=record.intake_status||record.profile_status||record.status||'Draft';
+  const idx=DB[currentEntity].findIndex(r=>r[cfg.pk]===pk);
+  if(idx>=0) DB[currentEntity][idx]=record;
+  else DB[currentEntity].push(record);
+  updateCounts();
+  toast('Record saved successfully');
+  showList();
+}
+
+function deleteRecord(entity,id){
+  deleteTarget={entity,id};
+  document.getElementById('modal-delete').classList.add('open');
+}
+function confirmDelete(){
+  const {entity,id}=deleteTarget;
+  DB[entity]=DB[entity].filter(r=>r[ENTITIES[entity].pk]!==id);
+  closeModal(); updateCounts(); toast('Record deleted'); showList();
+}
+function closeModal(){document.getElementById('modal-delete').classList.remove('open');}
+function updateCounts(){Object.keys(DB).forEach(k=>{const el=document.getElementById('cnt-'+k);if(el)el.textContent=DB[k].length;});}
+function toast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+navigate('scs');
+</script>
+</body>
+</html>
